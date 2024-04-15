@@ -8,7 +8,7 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Principal {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         JsonArray listaRegistroLocal = new JsonArray();
         ArrayList<String> listaRegistroGlobal = new ArrayList<>();
 
