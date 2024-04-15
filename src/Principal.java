@@ -8,115 +8,106 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Principal {
-    public static void main(String[] args) throws IOException, RuntimeException {
+    public static void main(String[] args) {
         JsonArray listaRegistroLocal = new JsonArray();
-        ArrayList<String> listaRgistroGlobal = new ArrayList<>();
+        ArrayList<String> listaRegistroGlobal = new ArrayList<>();
 
         EscrituraRelleno relleno = new EscrituraRelleno();
         Scanner lectura = new Scanner(System.in);
 
-        String inicial = "";
-        String cambio = "";
-
         while (true) {
-
-
-
             try {
                 relleno.escribirMenu();
                 System.out.println("Ingresa tu Eleccion: ");
-                var eleccion01 = lectura.nextInt();
+                int eleccion01 = lectura.nextInt();
+                lectura.nextLine(); // Consumir el salto de línea
+
                 if (eleccion01 == 8) {
                     break;
                 }
 
+                String inicial = "";
+                String cambio = "";
+
                 if (eleccion01 == 7) {
                     relleno.escribirMonedas();
                     System.out.println("Ingrese su moneda 1 o Nativa: ");
-                    inicial = lectura.nextLine();
-                    System.out.println("ingrese su moneda 2 a Conversion: ");
-                    cambio = lectura.nextLine();
+                    inicial = lectura.nextLine().toUpperCase();
+                    System.out.println("Ingrese su moneda 2 a Conversion: ");
+                    cambio = lectura.nextLine().toUpperCase();
 
                 } else {
-                    if (eleccion01 == 1) {
-                        inicial = "USD";
-                        cambio = "ARS";
-                    } else if (eleccion01 == 2) {
-                        inicial = "ARS";
-                        cambio = "USD";
-                    } else if (eleccion01 == 3) {
-                        inicial = "USD";
-                        cambio = "BOB";
-                    } else if (eleccion01 == 4) {
-                        inicial = "BOB";
-                        cambio = "USD";
-                    } else if (eleccion01 == 5) {
-                        inicial = "USD";
-                        cambio = "BRL";
-                    } else if (eleccion01 == 6) {
-                        inicial = "BRL";
-                        cambio = "USD";
+                    switch (eleccion01) {
+                        case 1:
+                            inicial = "USD";
+                            cambio = "ARS";
+                            break;
+                        case 2:
+                            inicial = "ARS";
+                            cambio = "USD";
+                            break;
+                        case 3:
+                            inicial = "USD";
+                            cambio = "BOB";
+                            break;
+                        case 4:
+                            inicial = "BOB";
+                            cambio = "USD";
+                            break;
+                        case 5:
+                            inicial = "USD";
+                            cambio = "BRL";
+                            break;
+                        case 6:
+                            inicial = "BRL";
+                            cambio = "USD";
+                            break;
+                        default:
+                            System.out.println("Elección inválida.");
+                            continue; // Volver al inicio del bucle while sin procesar el resto del código
                     }
                 }
 
-
                 System.out.println("Ingrese la cantidad a Convertir");
                 Double cantidad = lectura.nextDouble();
-                lectura.nextLine();
-                try {
+                lectura.nextLine(); // Consumir el salto de línea
 
+                String moneda1 = inicial.toUpperCase();
+                String moneda2 = cambio.toUpperCase();
 
-                    String moneda1 = inicial.toUpperCase();
-                    String moneda2 = cambio.toUpperCase();
+                ConsultaApi consulta = new ConsultaApi();
+                Tasa representation = consulta.buscaTasaEnAPi(moneda1, moneda2, cantidad);
+                Double tasaDeCambio = representation.conversion_rate();
+                Double totalConversion = representation.conversion_result();
 
-                    // Pedir respuesta de la api y guardar valores en record Tasa
-                    ConsultaApi consulta = new ConsultaApi();
-                    Tasa representation = consulta.buscaTasaEnAPi(moneda1, moneda2, cantidad);
-                    Double tasaDeCambio = representation.conversion_rate();
-                    Double totalConversion = representation.conversion_result();
+                LocalDateTime ahora = LocalDateTime.now();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+                String tiempoRegistro = ahora.format(formatter);
 
+                String registro = String.format("[%s] Se convirtieron %f %s a %s %f", tiempoRegistro, cantidad, moneda1, moneda2, totalConversion);
+                String registroGlobal = String.format("[%s]", tiempoRegistro);
 
-                    // Registrar la conversión
-                    LocalDateTime ahora = LocalDateTime.now();
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-                    String tiempoRegistro = ahora.format(formatter);
+                var jsonObject = ObjetoJson.getJsonObject(moneda1, moneda2, tasaDeCambio, cantidad, totalConversion, registroGlobal);
+                System.out.println(cantidad + " " + moneda1 + " x " + tasaDeCambio + " -> " + moneda2 + " = " + totalConversion);
 
-                    String registro = String.format("[%s] Se convirtieron %f %s a %s %f", tiempoRegistro, cantidad, moneda1, moneda2, totalConversion);
+                listaRegistroGlobal.add(registro);
+                listaRegistroLocal.add(jsonObject);
 
-                    String registroGlobal = String.format("[%s]", tiempoRegistro);
-
-                    // Crear objeto Json y darle propiedades
-                    var jsonObject = ObjetoJson.getJsonObject(moneda1, moneda2, tasaDeCambio, cantidad, totalConversion, registroGlobal);
-                    System.out.println(cantidad + " " + moneda1 + " x " + tasaDeCambio + " -> " + moneda2 + " = " + totalConversion);
-
-                    // Agregar valores a listas locales y globales de registro
-                    listaRgistroGlobal.add(registro);
-                    listaRegistroLocal.add(jsonObject);
-
-                    // Generar archivo Json local
-                    GeneradorDeArchivos archivoJson = new GeneradorDeArchivos();
-                    archivoJson.guardarJson(listaRegistroLocal);
-                } catch (InputMismatchException e) {
-                    System.out.println("Error la entrada no es un numero entero");
-                    lectura.nextLine();
-                } catch (RuntimeException e){
-                    System.out.println(e.getMessage());
-                }
-
-
+                GeneradorDeArchivos archivoJson = new GeneradorDeArchivos();
+                archivoJson.guardarJson(listaRegistroLocal);
+            } catch (InputMismatchException e) {
+                System.out.println("Error: La entrada no es un número.");
+                lectura.nextLine(); // Limpiar el buffer de entrada
+            } catch (RuntimeException e) {
+                System.out.println("Error: " + e.getMessage());
             } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (Exception e){
-                System.out.println(e.getMessage());
+                throw new RuntimeException("Error al leer/escribir el archivo: " + e.getMessage());
             }
-
         }
 
-        //Generar archivos Json Global
         GeneradorDeArchivos archivoRegistro = new GeneradorDeArchivos();
-        archivoRegistro.AgregarDatosAJsonGlobal(listaRgistroGlobal);
+        archivoRegistro.AgregarDatosAJsonGlobal(listaRegistroGlobal);
 
+        lectura.close();
     }
-
-
 }
