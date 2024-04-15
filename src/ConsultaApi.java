@@ -6,9 +6,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class ConsultaApi {
-    public Tasa buscaTasaEnAPi(String tasaInicio ,String tasaCambio ) {
+    public Tasa buscaTasaEnAPi(String tasaInicio ,String tasaCambio , Double cantidad ) {
 
-        String direction = "https://v6.exchangerate-api.com/v6/3631d2f9123e0375f1705ad9/pair/" + tasaInicio + "/" + tasaCambio;
+        String direction = "https://v6.exchangerate-api.com/v6/3631d2f9123e0375f1705ad9/pair/" + tasaInicio + "/" + tasaCambio + "/"+cantidad;
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(direction))

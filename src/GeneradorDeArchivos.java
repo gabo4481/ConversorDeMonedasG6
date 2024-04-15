@@ -11,7 +11,7 @@ public class GeneradorDeArchivos {
                 .setPrettyPrinting()
                 .create();
 
-        FileWriter escritura = new FileWriter("Cambios.json");
+        FileWriter escritura = new FileWriter("HistorialDeConversiones.json");
         escritura.write(gson.toJson(jsonArray));
         escritura.close();
     }

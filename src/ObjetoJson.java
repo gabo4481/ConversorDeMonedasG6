@@ -1,6 +1,6 @@
 import com.google.gson.JsonObject;
-
 public class ObjetoJson {
+
     public static JsonObject getJsonObject(String monedaInicial, String monedaCambio, Double tasaDeCambio,Double cantidad, Double total) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("Moneda Nativa", monedaInicial);
@@ -11,4 +11,5 @@ public class ObjetoJson {
 
         return jsonObject;
     }
+
 }
