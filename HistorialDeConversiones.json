@@ -1,5 +1,9 @@
 [
   {
-    "Cantidad Seleccionada": 100.0
+    "Moneda Nativa": "USD",
+    "Moneda Seleccionada": "ARS",
+    "Tasa De Cambio": 864.75,
+    "Cantidad Seleccionada": 200.0,
+    "Total De Conversion": 172950.0
   }
 ]

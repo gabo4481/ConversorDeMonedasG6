@@ -24,72 +24,79 @@ public class Principal {
             System.out.println("8. Salir");
             System.out.println("*******************************************************");
             System.out.println("Ingresa tu Eleccion: ");
+
             var eleccion01 = lectura.nextInt();
+            lectura.nextLine();
 
-            if (eleccion01 == 8){
-                break;
-            }
-
+            try {
 
 
-            if (eleccion01 == 1) {
-                inicial = "USD";
-                cambio = "ASR";
-            } else if (eleccion01 == 2) {
-                inicial = "ASR";
-                cambio = "USD";
-            } else if (eleccion01 == 3) {
-                inicial = "USD";
-                cambio = "BOB";
-            } else if (eleccion01 == 4) {
-                inicial = "BOB";
-                cambio = "USD";
-            } else if (eleccion01 == 5) {
-                inicial = "USD";
-                cambio = "BRL";
-            } else if (eleccion01 == 6) {
-                inicial = "BRL";
-                cambio = "USD";
-            } else if (eleccion01 == 7) {
-                System.out.println("Monedas Disponibles: ");
-                System.out.println("""
+                if (eleccion01 == 8) {
+                    break;
+                }
+
+                if (eleccion01 == 7) {
+                    System.out.println("Monedas Disponibles: ");
+                    System.out.println("""
                             AUD\tATS\tBEF\tBRL\tCAD\tCHF\tCNY\tDEM
                             DKK\tESP\tEUR\tFIM\tFRF\tGBP\tGRD\tHKD
                             IEP\tINR\tIRR\tITL\tJPY\tKRW\tLKR\tMXN
                             MYR\tNOK\tNLG\tNZD\tPTE\tSEK\tSGD\tTHB
                             TWD\tUSD\tZAR""");
-                System.out.println("**************************************");
-                System.out.println("Ingrese su Moneda1 o Nativa: ");
-                inicial = lectura.nextLine();
-                System.out.println("ingrese su moneda de seleccion: ");
-                cambio = lectura.nextLine();
+                    System.out.println("**************************************");
+                    System.out.println("Ingrese su Moneda1 o Nativa: ");
+                    inicial = lectura.nextLine();
+                    System.out.println("ingrese su moneda de seleccion: ");
+                    cambio = lectura.nextLine();
 
 
+                } else {
+                    if (eleccion01 == 1) {
+                        inicial = "USD";
+                        cambio = "ARS";
+                    } else if (eleccion01 == 2) {
+                        inicial = "ARS";
+                        cambio = "USD";
+                    } else if (eleccion01 == 3) {
+                        inicial = "USD";
+                        cambio = "BOB";
+                    } else if (eleccion01 == 4) {
+                        inicial = "BOB";
+                        cambio = "USD";
+                    } else if (eleccion01 == 5) {
+                        inicial = "USD";
+                        cambio = "BRL";
+                    } else if (eleccion01 == 6) {
+                        inicial = "BRL";
+                        cambio = "USD";
+                    }
+                }
+
+                System.out.println(inicial);
+                System.out.println(cambio);
+                System.out.println("Ingrese la cantidad a Convertir");
+                Double cantidad = lectura.nextDouble();
+                lectura.nextLine();
+                System.out.println(cantidad);
+
+                ConsultaApi consulta = new ConsultaApi();
+                Tasa representation = consulta.buscaTasaEnAPi(inicial, cambio, cantidad);
+                String monedaNativa = representation.base_code();
+                String monedaCambio = representation.target_code();
+                Double tasaDeCambio = representation.conversion_rate();
+                Double totalConversion = representation.conversion_result();
+
+                var jsonObject = ObjetoJson.getJsonObject(monedaNativa, monedaCambio, tasaDeCambio, cantidad, totalConversion);
+                System.out.println(representation);
+                System.out.println(representation.base_code() + " -> " + representation.target_code() + " = " + totalConversion);
+
+                lista.add(jsonObject);
+
+                GeneradorDeArchivos archivoJson = new GeneradorDeArchivos();
+                archivoJson.guardarJson(lista);
+            } catch (RuntimeException e){
+                System.out.println(e.getMessage());
             }
-
-
-            System.out.println("Ingrese la cantidad a Convertir");
-            Double cantidad = lectura.nextDouble();
-
-            ConsultaApi consulta = new ConsultaApi();
-            Tasa representation = consulta.buscaTasaEnAPi(inicial , cambio, cantidad);
-            String monedaNativa = representation.base_code();
-            String monedaCambio = representation.target_code();
-            Double tasaDeCambio = representation.conversion_rate();
-            Double totalConversion = representation.conversion_result();
-
-            var jsonObject = ObjetoJson.getJsonObject(monedaNativa, monedaCambio, tasaDeCambio, cantidad, totalConversion);
-            System.out.println(representation.toString());
-            System.out.println(representation.base_code() + " -> " + representation.target_code() + " = " + totalConversion);
-
-            lista.add(jsonObject);
-
-            GeneradorDeArchivos archivoJson = new GeneradorDeArchivos();
-            archivoJson.guardarJson(lista);
-
-
-
-
 
 
         }
