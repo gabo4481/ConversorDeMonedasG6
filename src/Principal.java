@@ -4,10 +4,11 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Principal {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, RuntimeException {
         JsonArray listaRegistroLocal = new JsonArray();
         ArrayList<String> listaRgistroGlobal = new ArrayList<>();
 
@@ -19,13 +20,12 @@ public class Principal {
 
         while (true) {
 
-            relleno.escribirMenu();
-            System.out.println("Ingresa tu Eleccion: ");
-            var eleccion01 = lectura.nextInt();
-            lectura.nextLine();
+
 
             try {
-
+                relleno.escribirMenu();
+                System.out.println("Ingresa tu Eleccion: ");
+                var eleccion01 = lectura.nextInt();
                 if (eleccion01 == 8) {
                     break;
                 }
@@ -63,44 +63,58 @@ public class Principal {
                 System.out.println("Ingrese la cantidad a Convertir");
                 Double cantidad = lectura.nextDouble();
                 lectura.nextLine();
-                String moneda1 = inicial.toUpperCase();
-                String moneda2 = cambio.toUpperCase();
-
-                // Pedir respuesta de la api y guardar valores en record Tasa
-                ConsultaApi consulta = new ConsultaApi();
-                Tasa representation = consulta.buscaTasaEnAPi(moneda1, moneda2, cantidad);
-                Double tasaDeCambio = representation.conversion_rate();
-                Double totalConversion = representation.conversion_result();
+                try {
 
 
-                // Registrar la conversión
-                LocalDateTime ahora = LocalDateTime.now();
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-                String tiempoRegistro = ahora.format(formatter);
+                    String moneda1 = inicial.toUpperCase();
+                    String moneda2 = cambio.toUpperCase();
 
-                String registro = String.format("[%s] Se convirtieron %f %s a %s %f", tiempoRegistro, cantidad, moneda1, moneda2, totalConversion);
+                    // Pedir respuesta de la api y guardar valores en record Tasa
+                    ConsultaApi consulta = new ConsultaApi();
+                    Tasa representation = consulta.buscaTasaEnAPi(moneda1, moneda2, cantidad);
+                    Double tasaDeCambio = representation.conversion_rate();
+                    Double totalConversion = representation.conversion_result();
 
-                String registroGlobal = String.format("[%s]", tiempoRegistro);
 
-                // Crear objeto Json y darle propiedades
-                var jsonObject = ObjetoJson.getJsonObject(moneda1, moneda2, tasaDeCambio, cantidad, totalConversion,registroGlobal);
-                System.out.println(cantidad +" "+ moneda1 + " x " + tasaDeCambio+ " -> " + moneda2 + " = " + totalConversion);
+                    // Registrar la conversión
+                    LocalDateTime ahora = LocalDateTime.now();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+                    String tiempoRegistro = ahora.format(formatter);
 
-                // Agregar valores a listas locales y globales de registro
-                listaRgistroGlobal.add(registro);
-                listaRegistroLocal.add(jsonObject);
+                    String registro = String.format("[%s] Se convirtieron %f %s a %s %f", tiempoRegistro, cantidad, moneda1, moneda2, totalConversion);
 
-                // Generar archivo Json local
-                GeneradorDeArchivos archivoJson = new GeneradorDeArchivos();
-                archivoJson.guardarJson(listaRegistroLocal);
-            } catch (RuntimeException e){
+                    String registroGlobal = String.format("[%s]", tiempoRegistro);
+
+                    // Crear objeto Json y darle propiedades
+                    var jsonObject = ObjetoJson.getJsonObject(moneda1, moneda2, tasaDeCambio, cantidad, totalConversion, registroGlobal);
+                    System.out.println(cantidad + " " + moneda1 + " x " + tasaDeCambio + " -> " + moneda2 + " = " + totalConversion);
+
+                    // Agregar valores a listas locales y globales de registro
+                    listaRgistroGlobal.add(registro);
+                    listaRegistroLocal.add(jsonObject);
+
+                    // Generar archivo Json local
+                    GeneradorDeArchivos archivoJson = new GeneradorDeArchivos();
+                    archivoJson.guardarJson(listaRegistroLocal);
+                } catch (InputMismatchException e) {
+                    System.out.println("Error la entrada no es un numero entero");
+                    lectura.nextLine();
+                } catch (RuntimeException e){
+                    System.out.println(e.getMessage());
+                }
+
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (Exception e){
                 System.out.println(e.getMessage());
             }
+
         }
 
         //Generar archivos Json Global
         GeneradorDeArchivos archivoRegistro = new GeneradorDeArchivos();
-        archivoRegistro.guardarJsonGlobal(listaRgistroGlobal);
+        archivoRegistro.AgregarDatosAJsonGlobal(listaRgistroGlobal);
 
     }
 
