@@ -1,7 +1,18 @@
 public record Tasa(String base_code
                    ,String target_code
                    ,Double conversion_rate
-                   , Double conversion_result){
+                   ,Double conversion_result){
+
+    @Override
+    public String toString() {
+        return "Tasa{" +
+                "base_code='" + base_code + '\'' +
+                ", target_code='" + target_code + '\'' +
+                ", conversion_rate=" + conversion_rate +
+                ", conversion_result=" + conversion_result +
+                '}';
+    }
+
     @Override
     public String base_code() {
         return base_code;

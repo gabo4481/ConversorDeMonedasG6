@@ -7,8 +7,8 @@ public class Principal {
     public static void main(String[] args) throws IOException {
         JsonArray lista = new JsonArray();
         Scanner lectura = new Scanner(System.in);
-        String inicial ;
-        var cambio = " ";
+        String inicial = "";
+        var cambio = "";
 
         
 
@@ -61,6 +61,8 @@ public class Principal {
                 System.out.println("**************************************");
                 System.out.println("Ingrese su Moneda1 o Nativa: ");
                 inicial = lectura.nextLine();
+                System.out.println("ingrese su moneda de seleccion: ");
+                cambio = lectura.nextLine();
 
 
             }
@@ -70,14 +72,14 @@ public class Principal {
             Double cantidad = lectura.nextDouble();
 
             ConsultaApi consulta = new ConsultaApi();
-            var representation = consulta.buscaTasaEnAPi(inicial , cambio, cantidad);
+            Tasa representation = consulta.buscaTasaEnAPi(inicial , cambio, cantidad);
             String monedaNativa = representation.base_code();
             String monedaCambio = representation.target_code();
             Double tasaDeCambio = representation.conversion_rate();
             Double totalConversion = representation.conversion_result();
 
             var jsonObject = ObjetoJson.getJsonObject(monedaNativa, monedaCambio, tasaDeCambio, cantidad, totalConversion);
-
+            System.out.println(representation.toString());
             System.out.println(representation.base_code() + " -> " + representation.target_code() + " = " + totalConversion);
 
             lista.add(jsonObject);
