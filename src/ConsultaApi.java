@@ -14,7 +14,6 @@ public class ConsultaApi {
         String tasaCambioEncoded = URLEncoder.encode(tasaCambio,"UTF-8");
 
         String direction = "https://v6.exchangerate-api.com/v6/3631d2f9123e0375f1705ad9/pair/" + tasaInicioEncoded + "/" + tasaCambioEncoded + "/"+cantidad;
-        System.out.println(direction);
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(direction))

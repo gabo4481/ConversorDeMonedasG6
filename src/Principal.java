@@ -1,54 +1,41 @@
 import com.google.gson.JsonArray;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Principal {
     public static void main(String[] args) throws IOException {
-        JsonArray lista = new JsonArray();
-        Scanner lectura = new Scanner(System.in);
-        String inicial = "";
-        var cambio = "";
+        JsonArray listaRegistroLocal = new JsonArray();
+        ArrayList<String> listaRgistroGlobal = new ArrayList<>();
 
-        
+        EscrituraRelleno relleno = new EscrituraRelleno();
+        Scanner lectura = new Scanner(System.in);
+
+        String inicial = "";
+        String cambio = "";
 
         while (true) {
-            System.out.println("*******************************************************");
-            System.out.println("1. USD -> ASR (Dolar a Peso Argentino)");
-            System.out.println("2. ASR -> USD (Peso Argentino a Dolar)");
-            System.out.println("3. USD -> BOB (Dolar a Boliviano)");
-            System.out.println("4. BOB -> USD (Boliviano a Dolar)");
-            System.out.println("5. USD -> BRL (Dolar a Real Brasileño)");
-            System.out.println("6. BRL -> USD (Real Brasileño a Dolar)");
-            System.out.println("7. seleccionar Monedas (Moneda1 -> Moneda2)");
-            System.out.println("8. Salir");
-            System.out.println("*******************************************************");
-            System.out.println("Ingresa tu Eleccion: ");
 
+            relleno.escribirMenu();
+            System.out.println("Ingresa tu Eleccion: ");
             var eleccion01 = lectura.nextInt();
             lectura.nextLine();
 
             try {
-
 
                 if (eleccion01 == 8) {
                     break;
                 }
 
                 if (eleccion01 == 7) {
-                    System.out.println("Monedas Disponibles: ");
-                    System.out.println("""
-                            AUD\tATS\tBEF\tBRL\tCAD\tCHF\tCNY\tDEM
-                            DKK\tESP\tEUR\tFIM\tFRF\tGBP\tGRD\tHKD
-                            IEP\tINR\tIRR\tITL\tJPY\tKRW\tLKR\tMXN
-                            MYR\tNOK\tNLG\tNZD\tPTE\tSEK\tSGD\tTHB
-                            TWD\tUSD\tZAR""");
-                    System.out.println("**************************************");
-                    System.out.println("Ingrese su Moneda1 o Nativa: ");
+                    relleno.escribirMonedas();
+                    System.out.println("Ingrese su moneda 1 o Nativa: ");
                     inicial = lectura.nextLine();
-                    System.out.println("ingrese su moneda de seleccion: ");
+                    System.out.println("ingrese su moneda 2 a Conversion: ");
                     cambio = lectura.nextLine();
-
 
                 } else {
                     if (eleccion01 == 1) {
@@ -72,34 +59,48 @@ public class Principal {
                     }
                 }
 
-                System.out.println(inicial);
-                System.out.println(cambio);
+
                 System.out.println("Ingrese la cantidad a Convertir");
                 Double cantidad = lectura.nextDouble();
                 lectura.nextLine();
-                System.out.println(cantidad);
+                String moneda1 = inicial.toUpperCase();
+                String moneda2 = cambio.toUpperCase();
 
+                // Pedir respuesta de la api y guardar valores en record Tasa
                 ConsultaApi consulta = new ConsultaApi();
-                Tasa representation = consulta.buscaTasaEnAPi(inicial, cambio, cantidad);
-                String monedaNativa = representation.base_code();
-                String monedaCambio = representation.target_code();
+                Tasa representation = consulta.buscaTasaEnAPi(moneda1, moneda2, cantidad);
                 Double tasaDeCambio = representation.conversion_rate();
                 Double totalConversion = representation.conversion_result();
 
-                var jsonObject = ObjetoJson.getJsonObject(monedaNativa, monedaCambio, tasaDeCambio, cantidad, totalConversion);
-                System.out.println(representation);
-                System.out.println(representation.base_code() + " -> " + representation.target_code() + " = " + totalConversion);
 
-                lista.add(jsonObject);
+                // Registrar la conversión
+                LocalDateTime ahora = LocalDateTime.now();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+                String tiempoRegistro = ahora.format(formatter);
 
+                String registro = String.format("[%s] Se convirtieron %f %s a %s %f", tiempoRegistro, cantidad, moneda1, moneda2, totalConversion);
+
+                String registroGlobal = String.format("[%s]", tiempoRegistro);
+
+                // Crear objeto Json y darle propiedades
+                var jsonObject = ObjetoJson.getJsonObject(moneda1, moneda2, tasaDeCambio, cantidad, totalConversion,registroGlobal);
+                System.out.println(cantidad +" "+ moneda1 + " x " + tasaDeCambio+ " -> " + moneda2 + " = " + totalConversion);
+
+                // Agregar valores a listas locales y globales de registro
+                listaRgistroGlobal.add(registro);
+                listaRegistroLocal.add(jsonObject);
+
+                // Generar archivo Json local
                 GeneradorDeArchivos archivoJson = new GeneradorDeArchivos();
-                archivoJson.guardarJson(lista);
+                archivoJson.guardarJson(listaRegistroLocal);
             } catch (RuntimeException e){
                 System.out.println(e.getMessage());
             }
-
-
         }
+
+        //Generar archivos Json Global
+        GeneradorDeArchivos archivoRegistro = new GeneradorDeArchivos();
+        archivoRegistro.guardarJsonGlobal(listaRgistroGlobal);
 
     }
 
