@@ -1,4 +1,4 @@
-<h1 align="center">** BIENVENIDO A MI CONVERTIDOS DE MONEDAS **</h1>
+<h1 align="center">** BIENVENIDO A MI CONVERTIDOR DE MONEDAS **</h1>
 
 ###
 
