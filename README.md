@@ -1,4 +1,4 @@
-<h1 align="center">** BIENVENIDO A MI CONVERTIDOR DE MONEDAS **</h1>
+<h1 align="center">** SOY GABRIEL MENDOZA Y BIENVENIDO A MI CONVERTIDOR DE MONEDAS **</h1>
 
 ###
 
